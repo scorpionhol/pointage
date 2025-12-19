@@ -3,8 +3,9 @@ import express from "express";
 import session from "express-session";
 import path from "path";
 import { fileURLToPath } from "url";
-import knexLib from "knex";
+import { createRequire } from "module";
 
+const require = createRequire(import.meta.url);
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -13,13 +14,8 @@ const app = express();
 /* =============================
    CONFIGURATION DATABASE
 ============================= */
-const knex = knexLib({
-    client: "sqlite3",
-    connection: {
-        filename: path.join(__dirname, "data", "mulykap.sqlite3")
-    },
-    useNullAsDefault: true
-});
+const Database = require('better-sqlite3');
+const db = new Database(path.join(__dirname, 'data', 'mulykap.sqlite3'));
 
 /* =============================
    MIDDLEWARES
@@ -46,50 +42,75 @@ app.use(session({
 ============================= */
 
 // Initialisation de la base de données
-async function initDB() {
-    const hasAgents = await knex.schema.hasTable("agents");
-    if (!hasAgents) {
-        await knex.schema.createTable("agents", table => {
-            table.increments("id").primary();
-            // Schéma standardisé : colonnes name / note en base
-            table.string("name").notNullable();
-            table.string("note").notNullable();
-            table.string("matricule").unique(); // Matricule pour la badgeuse
-        });
-    } else {
-        // Vérifier si la colonne matricule existe, sinon l'ajouter
-        const hasMatricule = await knex.schema.hasColumn("agents", "matricule");
-        if (!hasMatricule) {
-            await knex.schema.alterTable("agents", table => {
-                table.string("matricule").unique();
-            });
+function initDB() {
+    try {
+        // Vérifier si la table agents existe
+        const agentsTable = db.prepare(`
+            SELECT name FROM sqlite_master 
+            WHERE type='table' AND name='agents'
+        `).get();
+        
+        if (!agentsTable) {
+            // Créer la table agents
+            db.exec(`
+                CREATE TABLE agents (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    name TEXT NOT NULL,
+                    note TEXT NOT NULL,
+                    matricule TEXT UNIQUE
+                )
+            `);
+        } else {
+            // Vérifier si la colonne matricule existe
+            const tableInfo = db.pragma('table_info(agents)');
+            const hasMatricule = tableInfo.some(col => col.name === 'matricule');
+            if (!hasMatricule) {
+                db.exec('ALTER TABLE agents ADD COLUMN matricule TEXT UNIQUE');
+            }
         }
-    }
 
-    const hasHistorique = await knex.schema.hasTable("historique");
-    if (!hasHistorique) {
-        await knex.schema.createTable("historique", table => {
-            table.increments("id").primary();
-            table.integer("agent_id").unsigned().references("id").inTable("agents");
-            table.string("date").notNullable();
-            table.string("heure").notNullable();
-        });
-    }
+        // Vérifier si la table historique existe
+        const historiqueTable = db.prepare(`
+            SELECT name FROM sqlite_master 
+            WHERE type='table' AND name='historique'
+        `).get();
+        
+        if (!historiqueTable) {
+            db.exec(`
+                CREATE TABLE historique (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    agent_id INTEGER,
+                    date TEXT NOT NULL,
+                    heure TEXT NOT NULL,
+                    FOREIGN KEY (agent_id) REFERENCES agents(id)
+                )
+            `);
+        }
 
-    // Table presences (pointage détaillé) si elle n'existe pas déjà
-    const hasPresences = await knex.schema.hasTable("presences");
-    if (!hasPresences) {
-        await knex.schema.createTable("presences", table => {
-            table.increments("id").primary();
-            table.integer("agent_id").unsigned().references("id").inTable("agents");
-            table.string("type");      // arrivée, départ, etc.
-            table.string("time");      // date/heure complète
-            table.string("source");    // ex: dashboard, manuel...
-            table.string("metadata");  // infos complémentaires éventuelles
-        });
+        // Vérifier si la table presences existe
+        const presencesTable = db.prepare(`
+            SELECT name FROM sqlite_master 
+            WHERE type='table' AND name='presences'
+        `).get();
+        
+        if (!presencesTable) {
+            db.exec(`
+                CREATE TABLE presences (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    agent_id INTEGER,
+                    type TEXT,
+                    time TEXT,
+                    source TEXT,
+                    metadata TEXT,
+                    FOREIGN KEY (agent_id) REFERENCES agents(id)
+                )
+            `);
+        }
+    } catch (err) {
+        console.error("Erreur lors de l'initialisation de la base de données:", err);
     }
 }
-initDB().catch(console.error);
+initDB();
 
 /* =============================
    AUTH MIDDLEWARE
@@ -142,10 +163,12 @@ app.get("/logout", (req, res) => {
 
 
 // Dashboard (accès direct avec authentification)
-app.get("/dashboard", isAuth, async (req, res) => {
+app.get("/dashboard", isAuth, (req, res) => {
     try {
-        const agents = await knex("agents")
-            .select("id", "name as nom", "note as poste", "matricule");
+        const agents = db.prepare(`
+            SELECT id, name as nom, note as poste, matricule 
+            FROM agents
+        `).all();
         res.render("dashboard", { pageTitle: "Dashboard", agents });
     } catch (err) {
         res.status(500).send("Erreur serveur : " + err.message);
@@ -154,10 +177,12 @@ app.get("/dashboard", isAuth, async (req, res) => {
 
 
 // Liste des agents
-app.get("/agents", isAuth, async (req, res) => {
+app.get("/agents", isAuth, (req, res) => {
     try {
-        const agents = await knex("agents")
-            .select("id", "name as nom", "note as poste", "matricule");
+        const agents = db.prepare(`
+            SELECT id, name as nom, note as poste, matricule 
+            FROM agents
+        `).all();
         res.render("agents", { pageTitle: "Agents", agents });
     } catch (err) {
         res.status(500).send("Erreur serveur : " + err.message);
@@ -167,18 +192,17 @@ app.get("/agents", isAuth, async (req, res) => {
 
 // Ajout d'un agent
 
-app.post("/agents", isAuth, async (req, res) => {
+app.post("/agents", isAuth, (req, res) => {
     const { nom, poste, matricule } = req.body;
     if (!nom || !poste) {
         return res.status(400).send("Nom et poste requis.");
     }
     try {
-        // En base : name/note, mais on garde nom/poste dans le formulaire
-        const agentData = { name: nom, note: poste };
-        if (matricule) {
-            agentData.matricule = matricule;
-        }
-        await knex("agents").insert(agentData);
+        const insert = db.prepare(`
+            INSERT INTO agents (name, note, matricule) 
+            VALUES (?, ?, ?)
+        `);
+        insert.run(nom, poste, matricule || null);
         res.redirect("/agents");
     } catch (err) {
         res.status(500).send("Erreur serveur : " + err.message);
@@ -187,12 +211,17 @@ app.post("/agents", isAuth, async (req, res) => {
 
 
 // Suppression d'un agent
-app.post("/agents/:id/delete", isAuth, async (req, res) => {
+app.post("/agents/:id/delete", isAuth, (req, res) => {
     const agentId = req.params.id;
     try {
         // On supprime d'abord l'historique lié, puis l'agent
-        await knex("historique").where({ agent_id: agentId }).del();
-        await knex("agents").where({ id: agentId }).del();
+        const deleteHistorique = db.prepare('DELETE FROM historique WHERE agent_id = ?');
+        const deletePresences = db.prepare('DELETE FROM presences WHERE agent_id = ?');
+        const deleteAgent = db.prepare('DELETE FROM agents WHERE id = ?');
+        
+        deleteHistorique.run(agentId);
+        deletePresences.run(agentId);
+        deleteAgent.run(agentId);
         res.redirect("/agents");
     } catch (err) {
         res.status(500).send("Erreur serveur : " + err.message);
@@ -201,19 +230,17 @@ app.post("/agents/:id/delete", isAuth, async (req, res) => {
 
 
 // Pointage rapide d'un agent depuis le dashboard
-app.get("/pointage/:id", isAuth, async (req, res) => {
+app.get("/pointage/:id", isAuth, (req, res) => {
     const agentId = req.params.id;
     const now = new Date();
     const isoTime = now.toISOString();
 
     try {
-        await knex("presences").insert({
-            agent_id: agentId,
-            type: "pointage",
-            time: isoTime,
-            source: "dashboard",
-            metadata: null
-        });
+        const insert = db.prepare(`
+            INSERT INTO presences (agent_id, type, time, source, metadata) 
+            VALUES (?, ?, ?, ?, ?)
+        `);
+        insert.run(agentId, "pointage", isoTime, "dashboard", null);
         res.redirect("/dashboard");
     } catch (err) {
         res.status(500).send("Erreur serveur : " + err.message);
@@ -222,16 +249,14 @@ app.get("/pointage/:id", isAuth, async (req, res) => {
 
 
 // Historique des pointages basé sur la table presences
-app.get("/historique", isAuth, async (req, res) => {
+app.get("/historique", isAuth, (req, res) => {
     try {
-        const historique = await knex("presences")
-            .leftJoin("agents", "agents.id", "presences.agent_id")
-            .select(
-                "presences.time",
-                "presences.type",
-                "agents.name as nom"
-            )
-            .orderBy("presences.time", "desc");
+        const historique = db.prepare(`
+            SELECT presences.time, presences.type, agents.name as nom
+            FROM presences
+            LEFT JOIN agents ON agents.id = presences.agent_id
+            ORDER BY presences.time DESC
+        `).all();
 
         res.render("historique", { pageTitle: "Historique", historique });
     } catch (err) {
@@ -255,7 +280,7 @@ app.get("/badgeuse", isAuth, (req, res) => {
 });
 
 // Soumission de pointage depuis la badgeuse virtuelle
-app.post("/badgeuse", isAuth, async (req, res) => {
+app.post("/badgeuse", isAuth, (req, res) => {
     try {
         const { badge, type } = req.body; // badge = code / matricule ou ID
 
@@ -264,12 +289,12 @@ app.post("/badgeuse", isAuth, async (req, res) => {
         }
 
         // On cherche l’agent par son matricule (code de badge)
-        let agent = await knex("agents").where({ matricule: badge }).first();
+        let agent = db.prepare('SELECT * FROM agents WHERE matricule = ?').get(badge);
         if (!agent) {
             // Si pas trouvé par matricule, essayer par ID
             const badgeId = parseInt(badge);
             if (!isNaN(badgeId)) {
-                agent = await knex("agents").where({ id: badgeId }).first();
+                agent = db.prepare('SELECT * FROM agents WHERE id = ?').get(badgeId);
             }
         }
         if (!agent) {
@@ -278,13 +303,11 @@ app.post("/badgeuse", isAuth, async (req, res) => {
 
         const now = new Date().toISOString();
 
-        await knex("presences").insert({
-            agent_id: agent.id,
-            type: type || "badge",
-            time: now,
-            source: "badgeuse_virtuelle",
-            metadata: null
-        });
+        const insert = db.prepare(`
+            INSERT INTO presences (agent_id, type, time, source, metadata) 
+            VALUES (?, ?, ?, ?, ?)
+        `);
+        insert.run(agent.id, type || "badge", now, "badgeuse_virtuelle", null);
 
         return res.redirect("/badgeuse?message=Pointage+enregistre+pour+" + encodeURIComponent(agent.name));
     } catch (err) {
@@ -297,7 +320,7 @@ app.post("/badgeuse", isAuth, async (req, res) => {
 //  API POUR BADGEUSE PHYSIQUE
 // =============================
 
-app.post("/api/pointage", async (req, res) => {
+app.post("/api/pointage", (req, res) => {
     try {
         const { badge, type } = req.body;
 
@@ -306,12 +329,12 @@ app.post("/api/pointage", async (req, res) => {
         }
 
         // On cherche l'agent par son matricule ou par son ID
-        let agent = await knex("agents").where({ matricule: badge }).first();
+        let agent = db.prepare('SELECT * FROM agents WHERE matricule = ?').get(badge);
         if (!agent) {
             // Si pas trouvé par matricule, essayer par ID
             const badgeId = parseInt(badge);
             if (!isNaN(badgeId)) {
-                agent = await knex("agents").where({ id: badgeId }).first();
+                agent = db.prepare('SELECT * FROM agents WHERE id = ?').get(badgeId);
             }
         }
         if (!agent) {
@@ -320,13 +343,11 @@ app.post("/api/pointage", async (req, res) => {
 
         const now = new Date().toISOString();
 
-        await knex("presences").insert({
-            agent_id: agent.id,
-            type: type || "badge",
-            time: now,
-            source: "badgeuse_api",
-            metadata: null
-        });
+        const insert = db.prepare(`
+            INSERT INTO presences (agent_id, type, time, source, metadata) 
+            VALUES (?, ?, ?, ?, ?)
+        `);
+        insert.run(agent.id, type || "badge", now, "badgeuse_api", null);
 
         res.json({ ok: true });
     } catch (err) {
