@@ -1,0 +1,93 @@
+
+
+<%- include('partials/header', { title: pageTitle }) %>
+
+<!-- Logo de la compagnie -->
+<div class="text-center my-4">
+    <img src="/images/LOGO.jpg" alt="Logo Mulykap" class="img-fluid" style="max-height: 100px;">
+</div>
+
+<!-- Carousel d'images de la compagnie (exemple avec une seule image, à compléter si besoin) -->
+<div id="carouselMulykap" class="carousel slide mb-4" data-bs-ride="carousel">
+  <div class="carousel-inner">
+    <div class="carousel-item active">
+      <img src="/images/LOGO.jpg" class="d-block w-100" alt="Image compagnie" style="max-height: 300px; object-fit: contain; background: #f8f9fa;">
+    </div>
+    <!-- Ajoutez d'autres <div class="carousel-item"> si vous avez plus d'images -->
+  </div>
+  <button class="carousel-control-prev" type="button" data-bs-target="#carouselMulykap" data-bs-slide="prev">
+    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+    <span class="visually-hidden">Précédent</span>
+  </button>
+  <button class="carousel-control-next" type="button" data-bs-target="#carouselMulykap" data-bs-slide="next">
+    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+    <span class="visually-hidden">Suivant</span>
+  </button>
+</div>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">Gestion des agents</h2>
+    <a href="/dashboard" class="btn btn-outline-secondary btn-sm">Retour au tableau de bord</a>
+</div>
+
+<div class="card mb-4 shadow-sm">
+    <div class="card-body">
+        <h5 class="card-title mb-3">Ajouter un agent</h5>
+        <form method="POST" class="row g-2 align-items-end">
+            <div class="col-md-4">
+                <label for="nom" class="form-label">Nom</label>
+                <input name="nom" id="nom" class="form-control" placeholder="Nom" required>
+            </div>
+            <div class="col-md-3">
+                <label for="poste" class="form-label">Poste</label>
+                <input name="poste" id="poste" class="form-control" placeholder="Poste" required>
+            </div>
+            <div class="col-md-3">
+                <label for="matricule" class="form-label">Matricule (badge)</label>
+                <input name="matricule" id="matricule" class="form-control" placeholder="Code badge">
+            </div>
+            <div class="col-md-2">
+                <button class="btn btn-primary w-100">Ajouter</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <h5 class="card-title mb-3">Liste des agents</h5>
+        <% if (agents && agents.length > 0) { %>
+            <div class="table-responsive">
+                <table class="table table-striped align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Nom</th>
+                            <th>Poste</th>
+                            <th>Matricule</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% agents.forEach(a => { %>
+                            <tr>
+                                <td><%= a.nom %></td>
+                                <td><%= a.poste %></td>
+                                <td><%= a.matricule || '-' %></td>
+                                <td class="text-end">
+                                    <form method="POST" action="/agents/<%= a.id %>/delete" class="d-inline"
+                                          onsubmit="return confirm('Supprimer définitivement cet agent ?');">
+                                        <button class="btn btn-sm btn-outline-danger">Supprimer</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+            </div>
+        <% } else { %>
+            <div class="alert alert-info text-center mb-0">Aucun agent enregistré.</div>
+        <% } %>
+    </div>
+</div>
+
+<%- include('partials/footer') %>

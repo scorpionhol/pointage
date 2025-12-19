@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= pageTitle || "Mulykap - Accueil" %></title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/custom.css">
+    <!-- Font Awesome pour les icônes -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+  /* Animations personnalisées */
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes slideInLeft {
+    from {
+      opacity: 0;
+      transform: translateX(-50px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes slideInRight {
+    from {
+      opacity: 0;
+      transform: translateX(50px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-20px); }
+  }
+
+  .animate-fade-in-up {
+    animation: fadeInUp 1s ease-out;
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 1.5s ease-out;
+  }
+
+  .animate-slide-left {
+    animation: slideInLeft 1s ease-out;
+  }
+
+  .animate-slide-right {
+    animation: slideInRight 1s ease-out;
+  }
+
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  .animate-pulse-slow {
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  /* Styles du carousel amélioré */
+  #heroCarousel {
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    margin: 0;
+  }
+
+  .carousel-item {
+    position: relative;
+    transition: transform 0.6s ease-in-out;
+  }
+
+  .carousel-item img {
+    width: 100%;
+    height: 100vh;
+    object-fit: cover;
+    filter: brightness(0.7);
+    transition: transform 0.6s ease, filter 0.6s ease;
+  }
+
+  .carousel-item:hover img {
+    transform: scale(1.1);
+    filter: brightness(0.8);
+  }
+
+  .carousel-caption {
+    z-index: 10;
+  }
+
+  .carousel-caption h1 {
+    text-shadow: 3px 3px 6px rgba(0,0,0,0.8);
+    letter-spacing: 2px;
+    animation: fadeInUp 1.2s ease-out;
+  }
+
+  .carousel-caption p {
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+    animation: fadeInUp 1.5s ease-out;
+  }
+
+  .carousel-caption .btn {
+    animation: fadeInUp 1.8s ease-out;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(242, 201, 76, 0.4);
+  }
+
+  .carousel-caption .btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(242, 201, 76, 0.6);
+  }
+
+  /* Contrôles du carousel personnalisés */
+  .carousel-control-prev,
+  .carousel-control-next {
+    width: 50px;
+    height: 50px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    opacity: 0.7;
+    transition: all 0.3s ease;
+  }
+
+  .carousel-control-prev:hover,
+  .carousel-control-next:hover {
+    opacity: 1;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-50%) scale(1.1);
+  }
+
+  .carousel-control-prev {
+    left: 20px;
+  }
+
+  .carousel-control-next {
+    right: 20px;
+  }
+
+  /* Indicateurs du carousel */
+  .carousel-indicators {
+    bottom: 30px;
+  }
+
+  .carousel-indicators button {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin: 0 5px;
+    background-color: rgba(255, 255, 255, 0.5);
+    border: 2px solid rgba(255, 255, 255, 0.8);
+    transition: all 0.3s ease;
+  }
+
+  .carousel-indicators button.active {
+    background-color: #F2C94C;
+    width: 30px;
+    border-radius: 6px;
+  }
+
+  /* Section À propos améliorée */
+  .about-section {
+    background: linear-gradient(135deg, #F5F5F5 0%, #ffffff 100%);
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+  }
+
+  .about-section::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 100%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(0, 74, 173, 0.05) 0%, transparent 70%);
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .logo-container {
+    position: relative;
+    display: inline-block;
+    padding: 20px;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+  }
+
+  .logo-container:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+  }
+
+  .logo-container img {
+    border-radius: 10px;
+  }
+
+  /* Section valeurs améliorée */
+  .values-section {
+    width: 100%;
+  }
+
+  .value-card {
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .value-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(242, 201, 76, 0.1), transparent);
+    transition: left 0.5s ease;
+  }
+
+  .value-card:hover {
+    transform: translateY(-10px);
+    border-color: #F2C94C;
+    box-shadow: 0 10px 30px rgba(242, 201, 76, 0.2);
+  }
+
+  .value-card:hover::before {
+    left: 100%;
+  }
+
+  .value-card h4 {
+    position: relative;
+    z-index: 1;
+  }
+
+  .value-card p {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Dégradés de fond pour les slides */
+  .slide-gradient-1 {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  }
+
+  .slide-gradient-2 {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  }
+
+  .slide-gradient-3 {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  }
+
+  .slide-gradient-4 {
+    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+  }
+
+  .slide-gradient-5 {
+    background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+  }
+
+  .slide-gradient-6 {
+    background: linear-gradient(135deg, #30cfd0 0%, #330867 100%);
+  }
+
+  .slide-content {
+    position: relative;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    color: white;
+    text-align: center;
+    padding: 0 20px;
+  }
+
+  /* Scroll fluide vers les sections */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Ajustement pour les ancres avec navbar fixe */
+  section[id] {
+    scroll-margin-top: 0;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .carousel-caption h1 {
+      font-size: 2rem !important;
+    }
+
+    .carousel-caption p {
+      font-size: 1rem;
+    }
+
+    .carousel-control-prev,
+    .carousel-control-next {
+      width: 40px;
+      height: 40px;
+    }
+  }
+</style>
+
+<!-- =======================
+     CARROUSEL FULLSCREEN AMÉLIORÉ
+======================== -->
+<div id="heroCarousel" class="carousel slide carousel-fade" data-bs-ride="carousel" data-bs-interval="4000">
+  
+  <!-- Indicateurs -->
+  <div class="carousel-indicators">
+    <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="0" class="active" aria-current="true"></button>
+    <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="1"></button>
+    <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="2"></button>
+    <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="3"></button>
+  </div>
+
+  <div class="carousel-inner">
+    
+    <!-- SLIDE 1 - Logo avec dégradé bleu -->
+    <div class="carousel-item active slide-gradient-1">
+      <div class="slide-content">
+        <div class="animate-float mb-4">
+          <img src="/images/LOGO.jpg" alt="Logo Mulykap" class="img-fluid" style="max-height: 200px; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.3);">
+        </div>
+        <h1 class="fw-bold mb-3 animate-fade-in-up" style="font-size: 3.5rem; text-shadow: 3px 3px 10px rgba(0,0,0,0.5);">
+          MULYKAP SARL
+        </h1>
+        <p class="lead mb-4 animate-fade-in-up" style="font-size: 1.3rem; max-width: 700px; text-shadow: 2px 2px 5px rgba(0,0,0,0.5);">
+          L'excellence congolaise au service de l'innovation et du développement.
+        </p>
+        <a href="/login" class="btn btn-warning btn-lg fw-bold px-5 py-3 animate-fade-in-up"
+           style="border-radius: 50px; font-size: 1.1rem; box-shadow: 0 6px 20px rgba(242, 201, 76, 0.5);">
+          Accéder au pointage <i class="fas fa-sign-in-alt ms-2"></i>
+        </a>
+      </div>
+    </div>
+
+    <!-- SLIDE 2 - Entreprise visionnaire -->
+    <div class="carousel-item slide-gradient-2">
+      <div class="slide-content">
+        <div class="mb-4 animate-pulse-slow">
+          <i class="fas fa-lightbulb" style="font-size: 100px; opacity: 0.9;"></i>
+        </div>
+        <h1 class="fw-bold mb-3 animate-slide-left" style="font-size: 3.5rem; text-shadow: 3px 3px 10px rgba(0,0,0,0.5);">
+          Une entreprise visionnaire
+        </h1>
+        <p class="lead mb-4 animate-slide-right" style="font-size: 1.3rem; max-width: 700px; text-shadow: 2px 2px 5px rgba(0,0,0,0.5);">
+          Des infrastructures modernes pour une nation en pleine expansion.
+        </p>
+        <a href="#about" class="btn btn-light btn-lg fw-bold px-5 py-3 animate-fade-in-up"
+           style="border-radius: 50px; font-size: 1.1rem; box-shadow: 0 6px 20px rgba(255, 255, 255, 0.3);">
+          Découvrir nos services <i class="fas fa-info-circle ms-2"></i>
+        </a>
+      </div>
+    </div>
+
+    <!-- SLIDE 3 - Innovation technologique -->
+    <div class="carousel-item slide-gradient-3">
+      <div class="slide-content">
+        <div class="mb-4 animate-float">
+          <i class="fas fa-cogs" style="font-size: 100px; opacity: 0.9;"></i>
+        </div>
+        <h1 class="fw-bold mb-3 animate-fade-in-up" style="font-size: 3.5rem; text-shadow: 3px 3px 10px rgba(0,0,0,0.5);">
+          Innovation & Technologie
+        </h1>
+        <p class="lead mb-4 animate-fade-in-up" style="font-size: 1.3rem; max-width: 700px; text-shadow: 2px 2px 5px rgba(0,0,0,0.5);">
+          Nous mettons la technologie de pointe au service de votre réussite.
+        </p>
+        <a href="#values" class="btn btn-warning btn-lg fw-bold px-5 py-3 animate-fade-in-up"
+           style="border-radius: 50px; font-size: 1.1rem; box-shadow: 0 6px 20px rgba(242, 201, 76, 0.5);">
+          Découvrir nos valeurs <i class="fas fa-heart ms-2"></i>
+        </a>
+      </div>
+    </div>
+
+    <!-- SLIDE 4 - Excellence -->
+    <div class="carousel-item slide-gradient-4">
+      <div class="slide-content">
+        <div class="mb-4 animate-pulse-slow">
+          <i class="fas fa-trophy" style="font-size: 100px; opacity: 0.9;"></i>
+        </div>
+        <h1 class="fw-bold mb-3 animate-slide-left" style="font-size: 3.5rem; text-shadow: 3px 3px 10px rgba(0,0,0,0.5);">
+          Excellence & Qualité
+        </h1>
+        <p class="lead mb-4 animate-slide-right" style="font-size: 1.3rem; max-width: 700px; text-shadow: 2px 2px 5px rgba(0,0,0,0.5);">
+          Nous garantissons une qualité optimale dans tous nos services et solutions.
+        </p>
+        <a href="/login" class="btn btn-light btn-lg fw-bold px-5 py-3 animate-fade-in-up"
+           style="border-radius: 50px; font-size: 1.1rem; box-shadow: 0 6px 20px rgba(255, 255, 255, 0.3);">
+          Nous rejoindre <i class="fas fa-user-plus ms-2"></i>
+        </a>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Contrôles -->
+  <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
+    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+    <span class="visually-hidden">Précédent</span>
+  </button>
+  <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
+    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+    <span class="visually-hidden">Suivant</span>
+  </button>
+</div>
+
+<!-- =======================
+     SECTION À PROPOS AMÉLIORÉE
+======================== -->
+<section id="about" class="about-section py-5 position-relative">
+  <div class="container-fluid">
+    <div class="container text-center position-relative" style="z-index: 1;">
+    <!-- Logo Mulykap avec animation -->
+    <div class="logo-container mb-5 animate-fade-in">
+      <img src="/images/LOGO.jpg" alt="Logo Mulykap" class="img-fluid" style="max-height: 180px;">
+    </div>
+    
+    <h2 class="fw-bold mb-4 animate-fade-in-up" style="color:#004AAD; font-size: 2.5rem;">
+      À propos de Mulykap
+    </h2>
+    
+    <p class="lead mx-auto animate-fade-in-up" style="max-width: 900px; font-size: 1.1rem; line-height: 1.8; color: #555;">
+      Mulykap Sarl est une entreprise congolaise engagée dans l'innovation,
+      la technologie et la gestion avancée. Nos solutions modernes permettent
+      aux entreprises de performer dans un environnement en constante évolution.
+      Nous sommes fiers de contribuer au développement économique et technologique
+      de notre nation avec excellence et intégrité.
+    </p>
+    </div>
+  </div>
+</section>
+
+<!-- =======================
+     SECTION VALEURS AMÉLIORÉE
+======================== -->
+<section id="values" class="values-section py-5" style="background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);">
+  <div class="container-fluid">
+    <div class="container">
+    <h2 class="fw-bold text-center mb-5 animate-fade-in-up" style="color:#004AAD; font-size: 2.5rem;">
+      Nos valeurs
+    </h2>
+
+    <div class="row text-center">
+      
+      <div class="col-md-4 mb-4 animate-slide-left">
+        <div class="value-card p-5 shadow-lg rounded bg-white h-100">
+          <div class="mb-4">
+            <i class="fas fa-lightbulb" style="font-size: 60px; color: #F2C94C;"></i>
+          </div>
+          <h4 class="fw-bold mb-3" style="color:#004AAD; font-size: 1.5rem;">Innovation</h4>
+          <p style="color: #666; font-size: 1.05rem; line-height: 1.7;">
+            Nous mettons la technologie au service de la performance et créons
+            des solutions innovantes pour répondre aux défis modernes.
+          </p>
+        </div>
+      </div>
+
+      <div class="col-md-4 mb-4 animate-fade-in-up">
+        <div class="value-card p-5 shadow-lg rounded bg-white h-100">
+          <div class="mb-4">
+            <i class="fas fa-handshake" style="font-size: 60px; color: #F2C94C;"></i>
+          </div>
+          <h4 class="fw-bold mb-3" style="color:#004AAD; font-size: 1.5rem;">Responsabilité</h4>
+          <p style="color: #666; font-size: 1.05rem; line-height: 1.7;">
+            Au cœur de notre vision : servir la nation avec intégrité, éthique
+            et un engagement profond envers notre communauté.
+          </p>
+        </div>
+      </div>
+
+      <div class="col-md-4 mb-4 animate-slide-right">
+        <div class="value-card p-5 shadow-lg rounded bg-white h-100">
+          <div class="mb-4">
+            <i class="fas fa-medal" style="font-size: 60px; color: #F2C94C;"></i>
+          </div>
+          <h4 class="fw-bold mb-3" style="color:#004AAD; font-size: 1.5rem;">Excellence</h4>
+          <p style="color: #666; font-size: 1.05rem; line-height: 1.7;">
+            Nous assurons une qualité optimale dans tous nos services et nous
+            efforçons constamment de dépasser les attentes de nos clients.
+          </p>
+        </div>
+      </div>
+
+    </div>
+    </div>
+  </div>
+</section>
+
+<!-- Bootstrap JS pour le carousel -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Script pour animations au scroll -->
+<script>
+  // Attendre que le DOM soit chargé
+  document.addEventListener('DOMContentLoaded', function() {
+    // Animation au scroll
+    const observerOptions = {
+      threshold: 0.1,
+      rootMargin: '0px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.style.opacity = '1';
+          entry.target.style.transform = 'translateY(0)';
+        }
+      });
+    }, observerOptions);
+
+    // Observer les éléments avec animations
+    document.querySelectorAll('.animate-fade-in-up, .animate-slide-left, .animate-slide-right').forEach(el => {
+      el.style.opacity = '0';
+      el.style.transition = 'opacity 0.8s ease, transform 0.8s ease';
+      observer.observe(el);
+    });
+  });
+</script>
+</body>
+</html>

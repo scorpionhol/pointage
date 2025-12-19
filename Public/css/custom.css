@@ -1,0 +1,24 @@
+body {
+    background-color: #f5f7fa;
+}
+
+.logo-nav {
+    height: 40px;
+}
+
+.menu-card {
+    text-decoration: none;
+    color: inherit;
+}
+
+.menu-box {
+    padding: 40px;
+    text-align: center;
+    border-radius: 10px;
+    transition: 0.3s;
+}
+
+.menu-box:hover {
+    background-color: #e8f0fe;
+    transform: scale(1.03);
+}

@@ -1,0 +1,40 @@
+
+<%- include('partials/header', { title: pageTitle }) %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">Historique des pointages</h2>
+    <a href="/dashboard" class="btn btn-outline-secondary btn-sm">Retour au tableau de bord</a>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <% if (historique && historique.length > 0) { %>
+            <div class="table-responsive">
+                <table class="table table-striped align-middle mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Agent</th>
+                            <th>Type</th>
+                            <th>Date / Heure</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% historique.forEach(function(h) { %>
+                            <tr>
+                                <td><strong><%= h.nom %></strong></td>
+                                <td><%= h.type || "pointage" %></td>
+                                <td><%= h.time %></td>
+                            </tr>
+                        <% }); %>
+                    </tbody>
+                </table>
+            </div>
+        <% } else { %>
+            <div class="alert alert-info text-center mb-0">
+                Aucun historique de pointage pour le moment.
+            </div>
+        <% } %>
+    </div>
+</div>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,46 @@
+<%- include('partials/header', { title: pageTitle }) %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h2 class="mb-0">Badgeuse virtuelle</h2>
+  <a href="/dashboard" class="btn btn-outline-secondary btn-sm">Retour au tableau de bord</a>
+</div>
+
+<% if (message) { %>
+  <div class="alert alert-success"><%= message %></div>
+<% } %>
+
+<% if (error) { %>
+  <div class="alert alert-danger"><%= error %></div>
+<% } %>
+
+<div class="card shadow-sm">
+  <div class="card-body">
+    <h5 class="card-title mb-3">Simulation de badge</h5>
+    <p class="text-muted">
+      Saisis le <strong>code badge / matricule</strong> associé à l’agent, puis choisis le type de pointage.
+      Cela enregistre une ligne dans la table <code>presences</code>, comme une vraie badgeuse.
+    </p>
+
+    <form method="POST" action="/badgeuse" class="row g-3">
+      <div class="col-md-6">
+        <label for="badge" class="form-label">Code badge / matricule ou ID</label>
+        <input type="text" class="form-control" id="badge" name="badge" required autofocus placeholder="Matricule ou ID">
+      </div>
+      <div class="col-md-4">
+        <label for="type" class="form-label">Type de pointage</label>
+        <select id="type" name="type" class="form-select">
+          <option value="arrivee">Arrivée</option>
+          <option value="depart">Départ</option>
+          <option value="badge">Autre</option>
+        </select>
+      </div>
+      <div class="col-md-2 d-flex align-items-end">
+        <button class="btn btn-primary w-100">Valider</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<%- include('partials/footer') %>
+
+

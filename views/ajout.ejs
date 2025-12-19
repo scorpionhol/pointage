@@ -1,0 +1,18 @@
+<% layout('layout') %>
+
+<h3 class="mb-3">Ajouter un agent</h3>
+
+<form action="/agents/ajout" method="POST" class="card p-4 shadow-sm">
+
+    <div class="mb-3">
+        <label class="form-label">Nom complet</label>
+        <input type="text" name="nom" class="form-control" required>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Poste</label>
+        <input type="text" name="poste" class="form-control" required>
+    </div>
+
+    <button class="btn btn-success">Enregistrer</button>
+</form>
