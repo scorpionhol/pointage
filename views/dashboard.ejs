@@ -1,20 +1,88 @@
 
 <%- include('partials/header', { title: pageTitle }) %>
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="mb-0">Tableau de bord des agents</h2>
-    <nav>
-        <a href="/badgeuse" class="btn btn-outline-success btn-sm me-2">Badgeuse virtuelle</a>
-        <a href="/agents" class="btn btn-outline-primary btn-sm me-2">Liste des agents</a>
-        <a href="/historique" class="btn btn-outline-secondary btn-sm">Historique</a>
-    </nav>
+
+<div class="mb-4">
+    <div id="carouselImages" class="carousel slide rounded shadow-sm overflow-hidden" data-bs-ride="carousel" data-bs-interval="3500" style="background: linear-gradient(90deg, #007bff 60%, #00c6ff 100%); min-height:220px;">
+        <div class="carousel-inner" style="height:220px;">
+            <div class="carousel-item active position-relative">
+                <img src="/images/LOGO.jpg" class="d-block w-100" alt="Fond Mulykap" style="object-fit:cover; height:220px; opacity:0.85; filter:brightness(1.08) contrast(1.08);">
+                <div style="position:absolute;top:0;left:0;width:100%;height:100%;background:linear-gradient(90deg,rgba(0,0,0,0.25) 0%,rgba(0,0,0,0.05) 100%);z-index:1;"></div>
+                <div class="carousel-caption d-none d-md-block text-start" style="z-index:2;">
+                    <h2 class="mb-1 text-white">Tableau de bord <i class="fas fa-tachometer-alt"></i></h2>
+                    <p class="mb-0 text-white">Bienvenue sur la plateforme de pointage Mulykap</p>
+                </div>
+            </div>
+            <div class="carousel-item position-relative">
+                <img src="/images/pointe.jpg" class="d-block w-100" alt="Pointage" style="object-fit:cover; height:220px; opacity:0.85; filter:brightness(1.08) contrast(1.08);">
+                <div style="position:absolute;top:0;left:0;width:100%;height:100%;background:linear-gradient(90deg,rgba(0,0,0,0.25) 0%,rgba(0,0,0,0.05) 100%);z-index:1;"></div>
+                <div class="carousel-caption d-none d-md-block text-start" style="z-index:2;">
+                    <h2 class="mb-1 text-white">Pointage en entreprise</h2>
+                    <p class="mb-0 text-white">Suivi dynamique des présences</p>
+                </div>
+            </div>
+            <div class="carousel-item position-relative">
+                <img src="/images/presenc.jpg" class="d-block w-100" alt="Présence" style="object-fit:cover; height:220px; opacity:0.85; filter:brightness(1.08) contrast(1.08);">
+                <div style="position:absolute;top:0;left:0;width:100%;height:100%;background:linear-gradient(90deg,rgba(0,0,0,0.25) 0%,rgba(0,0,0,0.05) 100%);z-index:1;"></div>
+                <div class="carousel-caption d-none d-md-block text-start" style="z-index:2;">
+                    <h2 class="mb-1 text-white">Présence & Ponctualité</h2>
+                    <p class="mb-0 text-white">Valorisez l'assiduité de vos équipes</p>
+                </div>
+            </div>
+        </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#carouselImages" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Précédent</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#carouselImages" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Suivant</span>
+        </button>
+    </div>
 </div>
 
-<% if (typeof agents !== 'undefined' && agents.length > 0) { %>
-    <div class="row">
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card text-center shadow-sm border-0">
+            <div class="card-body">
+                <h5 class="card-title">Agents enregistrés</h5>
+                <p class="display-5 fw-bold text-primary"><%= agents.length %></p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-center shadow-sm border-0">
+            <div class="card-body">
+                <h5 class="card-title">Pointages aujourd'hui</h5>
+                <p class="display-5 fw-bold text-success" id="pointages-today">-</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-center shadow-sm border-0">
+            <div class="card-body">
+                <h5 class="card-title">Retards aujourd'hui</h5>
+                <p class="display-5 fw-bold text-danger" id="retards-today">-</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="card mb-4 shadow-sm position-relative overflow-hidden">
+    <div class="card-body">
+        <h5 class="card-title">Statistiques de pointage journalier</h5>
+        <canvas id="chart-pointages" height="80"></canvas>
+        <!-- Illustration décorative dans la carte -->
+        <img src="/images/pointage-illu.png" alt="Illustration pointage" style="position:absolute; right:10px; bottom:10px; height:60px; opacity:0.12; z-index:0; pointer-events:none;">
+    </div>
+</div>
+
+<div class="row">
+    <% if (typeof agents !== 'undefined' && agents.length > 0) { %>
         <% agents.forEach(function(a) { %>
             <div class="col-md-6 col-lg-4 mb-3">
-                <div class="card h-100 shadow-sm">
+                <div class="card h-100 shadow border-primary border-2">
                     <div class="card-body d-flex flex-column justify-content-between">
                         <div>
                             <h5 class="card-title mb-1"><strong><%= a.nom %></strong></h5>
@@ -25,9 +93,67 @@
                 </div>
             </div>
         <% }); %>
-    </div>
-<% } else { %>
-    <div class="alert alert-info text-center">Aucun agent à afficher.</div>
-<% } %>
+    <% } else { %>
+        <div class="alert alert-info text-center">Aucun agent à afficher.</div>
+    <% } %>
+</div>
+
+<div class="d-flex justify-content-end mt-4">
+    <a href="/badgeuse" class="btn btn-outline-success me-2">Badgeuse virtuelle</a>
+    <a href="/agents" class="btn btn-outline-primary me-2">Liste des agents</a>
+    <a href="/historique" class="btn btn-outline-secondary">Historique</a>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Simulation de données pour histogramme groupé (à remplacer par des données dynamiques côté serveur si besoin)
+const ctx = document.getElementById('chart-pointages').getContext('2d');
+const chart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'],
+        datasets: [
+            {
+                label: 'Pointages',
+                data: [12, 19, 14, 17, 20, 8, 5],
+                backgroundColor: 'rgba(0, 123, 255, 0.7)'
+            },
+            {
+                label: 'Retards',
+                data: [2, 3, 1, 2, 2, 0, 0],
+                backgroundColor: 'rgba(220, 53, 69, 0.7)'
+            },
+            {
+                label: 'Heures supp.',
+                data: [1, 2, 0, 1, 3, 0, 0],
+                backgroundColor: 'rgba(40, 167, 69, 0.7)'
+            }
+        ]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: { display: true, position: 'top' },
+            title: {
+                display: true,
+                text: 'Statistiques hebdomadaires (histogramme)'
+            }
+        },
+        scales: {
+            x: {
+                stacked: false,
+                title: { display: true, text: 'Jour' }
+            },
+            y: {
+                beginAtZero: true,
+                title: { display: true, text: 'Nombre' }
+            }
+        }
+    }
+});
+// Simulation pour stats (à remplacer par fetch AJAX ou variable serveur)
+document.getElementById('pointages-today').textContent = chart.data.datasets[0].data[4];
+document.getElementById('retards-today').textContent = chart.data.datasets[1].data[4];
+</script>
 
 <%- include('partials/footer') %>

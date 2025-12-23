@@ -60,11 +60,11 @@ function initDB() {
                     matricule TEXT UNIQUE
                 )
             `);
-        } else {
+    } else {
             // Vérifier si la colonne matricule existe
             const tableInfo = db.pragma('table_info(agents)');
             const hasMatricule = tableInfo.some(col => col.name === 'matricule');
-            if (!hasMatricule) {
+        if (!hasMatricule) {
                 db.exec('ALTER TABLE agents ADD COLUMN matricule TEXT UNIQUE');
             }
         }
@@ -85,7 +85,7 @@ function initDB() {
                     FOREIGN KEY (agent_id) REFERENCES agents(id)
                 )
             `);
-        }
+    }
 
         // Vérifier si la table presences existe
         const presencesTable = db.prepare(`
@@ -251,14 +251,74 @@ app.get("/pointage/:id", isAuth, (req, res) => {
 // Historique des pointages basé sur la table presences
 app.get("/historique", isAuth, (req, res) => {
     try {
-        const historique = db.prepare(`
-            SELECT presences.time, presences.type, agents.name as nom
-            FROM presences
-            LEFT JOIN agents ON agents.id = presences.agent_id
-            ORDER BY presences.time DESC
-        `).all();
+        const q = req.query.q ? req.query.q.trim() : '';
+        let historique;
+        if (q) {
+            historique = db.prepare(`
+                SELECT presences.time, presences.type, agents.name as nom
+                FROM presences
+                LEFT JOIN agents ON agents.id = presences.agent_id
+                WHERE agents.name LIKE ?
+                ORDER BY presences.time DESC
+            `).all(`%${q}%`);
+        } else {
+            historique = db.prepare(`
+                SELECT presences.time, presences.type, agents.name as nom
+                FROM presences
+                LEFT JOIN agents ON agents.id = presences.agent_id
+                ORDER BY presences.time DESC
+            `).all();
+        }
 
-        res.render("historique", { pageTitle: "Historique", historique });
+        // Ajout des règles d'heure fixe et calculs
+        const ARRIVEE_FIXE = "08:15";
+        const SORTIE_FIXE = "17:00";
+        // On regroupe les pointages par agent et date
+        const byAgentDate = {};
+        historique.forEach(h => {
+            const d = new Date(h.time);
+            const dateStr = d.toISOString().slice(0, 10);
+            const key = h.nom + "_" + dateStr;
+            if (!byAgentDate[key]) byAgentDate[key] = { arrivee: null, depart: null, nom: h.nom, date: dateStr };
+            if (h.type === "arrivee") {
+                if (!byAgentDate[key].arrivee || d < new Date(byAgentDate[key].arrivee)) byAgentDate[key].arrivee = h.time;
+            }
+            if (h.type === "depart") {
+                if (!byAgentDate[key].depart || d > new Date(byAgentDate[key].depart)) byAgentDate[key].depart = h.time;
+            }
+        });
+        // On prépare les données pour la vue
+        const historiqueAffiche = Object.values(byAgentDate).map(h => {
+            let arriveeRetard = false, arriveeStr = null, depStr = null, heuresSup = null;
+            if (h.arrivee) {
+                const t = new Date(h.arrivee);
+                arriveeStr = t.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                // Vérifie le retard
+                const [hFixe, mFixe] = ARRIVEE_FIXE.split(":").map(Number);
+                if (t.getHours() > hFixe || (t.getHours() === hFixe && t.getMinutes() > mFixe)) arriveeRetard = true;
+            }
+            if (h.depart) {
+                const t = new Date(h.depart);
+                depStr = t.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                // Heures supp
+                const [hFixe, mFixe] = SORTIE_FIXE.split(":").map(Number);
+                if (t.getHours() > hFixe || (t.getHours() === hFixe && t.getMinutes() > mFixe)) {
+                    const depMinutes = t.getHours() * 60 + t.getMinutes();
+                    const sortieMinutes = hFixe * 60 + mFixe;
+                    const diff = depMinutes - sortieMinutes;
+                    heuresSup = `${Math.floor(diff/60)}h${(diff%60).toString().padStart(2,'0')}`;
+                }
+            }
+            return {
+                nom: h.nom,
+                date: h.date,
+                arrivee: arriveeStr,
+                arriveeRetard,
+                depart: depStr,
+                heuresSup
+            };
+        });
+        res.render("historique", { pageTitle: "Historique", historique: historiqueAffiche, q });
     } catch (err) {
         res.status(500).send("Erreur serveur : " + err.message);
     }

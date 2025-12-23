@@ -6,26 +6,62 @@
     <a href="/dashboard" class="btn btn-outline-secondary btn-sm">Retour au tableau de bord</a>
 </div>
 
+<form method="GET" action="/historique" class="mb-3">
+    <div class="input-group">
+        <input type="text" class="form-control" name="q" placeholder="Rechercher un nom..." value="<%= typeof q !== 'undefined' ? q : '' %>">
+        <button class="btn btn-primary" type="submit">Chercher</button>
+    </div>
+</form>
 <div class="card shadow-sm">
-    <div class="card-body">
+        <div class="card-body">
         <% if (historique && historique.length > 0) { %>
             <div class="table-responsive">
                 <table class="table table-striped align-middle mb-0">
                     <thead class="table-dark">
                         <tr>
                             <th>Agent</th>
-                            <th>Type</th>
-                            <th>Date / Heure</th>
+                            <th>Date</th>
+                            <th>Arrivée</th>
+                            <th>Départ</th>
+                            <th>Retard</th>
+                            <th>Heures supp.</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <% historique.forEach(function(h) { %>
-                            <tr>
-                                <td><strong><%= h.nom %></strong></td>
-                                <td><%= h.type || "pointage" %></td>
-                                <td><%= h.time %></td>
-                            </tr>
-                        <% }); %>
+                                                <% historique.forEach(function(h) { %>
+                                                        <tr>
+                                                                <td><strong><%= h.nom %></strong></td>
+                                                                <td><%= h.date %></td>
+                                                                <td>
+                                                                    <% if (h.arrivee) { %>
+                                                                        <span style="<%= h.arriveeRetard ? 'color:red;' : '' %>"><%= h.arrivee %></span>
+                                                                    <% } else { %>
+                                                                        <span class="text-muted">-</span>
+                                                                    <% } %>
+                                                                </td>
+                                                                <td>
+                                                                    <% if (h.depart) { %>
+                                                                        <span><%= h.depart %></span>
+                                                                    <% } else { %>
+                                                                        <span class="text-muted">-</span>
+                                                                    <% } %>
+                                                                </td>
+                                                                <td>
+                                                                    <% if (h.arriveeRetard) { %>
+                                                                        <span class="badge bg-danger">Retard</span>
+                                                                    <% } else { %>
+                                                                        <span class="text-success">-</span>
+                                                                    <% } %>
+                                                                </td>
+                                                                <td>
+                                                                    <% if (h.heuresSup) { %>
+                                                                        <span class="badge bg-success">+<%= h.heuresSup %> h</span>
+                                                                    <% } else { %>
+                                                                        <span class="text-muted">-</span>
+                                                                    <% } %>
+                                                                </td>
+                                                        </tr>
+                                                <% }); %>
                     </tbody>
                 </table>
             </div>
