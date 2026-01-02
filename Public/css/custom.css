@@ -1,3 +1,204 @@
+/* --- Login Form Responsive & Large --- */
+/* --- Login Form Responsive & Extra Large --- */
+.login-page-bg {
+    min-height: 100vh;
+    min-width: 100vw;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(120deg, #f8fafc 60%, #e0e7ef 100%);
+    padding: 0;
+    margin: 0;
+}
+.login-card-lg {
+    padding: 3.5rem 3rem;
+    border-radius: 1.7rem;
+    font-size: 1.35rem;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.22);
+    max-width: 600px;
+    width: 100%;
+    margin: 0 auto;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+    .login-card-lg .form-control {
+        min-height: 3.3rem;
+        font-size: 1.25rem;
+        padding: 1.2rem 1.4rem;
+        border-radius: 0.9rem;
+    }
+    .login-card-lg button.btn {
+        font-size: 1.25rem;
+        padding: 1.1rem 0;
+        margin-top: 0.9rem;
+        border-radius: 0.9rem;
+    }
+    .login-card-lg h3, .login-card-lg h4 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 2.2rem;
+    }
+@media (max-width: 1200px) {
+    .login-card-lg {
+        max-width: 90vw;
+        padding: 2.5rem 1.2rem;
+        font-size: 1.1rem;
+    }
+    .login-card-lg h3, .login-card-lg h4 {
+        font-size: 2rem;
+    }
+}
+@media (max-width: 900px) {
+    .login-card-lg {
+        max-width: 98vw;
+        padding: 1.5rem 0.5rem;
+        font-size: 1rem;
+    }
+    .login-card-lg h3, .login-card-lg h4 {
+        font-size: 1.5rem;
+    }
+}
+@media (max-width: 600px) {
+    .login-page-bg {
+        padding: 0.5rem 0.1rem;
+    }
+    .login-card-lg {
+        padding: 1rem 0.1rem;
+        font-size: 0.98rem;
+        max-width: 99vw;
+    }
+    .login-card-lg .form-control {
+        min-height: 2.2rem;
+        font-size: 0.98rem;
+        padding: 0.6rem 0.5rem;
+    }
+    .login-card-lg h3, .login-card-lg h4 {
+        font-size: 1.1rem;
+    }
+}
+/* --- Login Form Large Style --- */
+.login-card-lg {
+    padding: 2.5rem 2rem;
+    border-radius: 1.2rem;
+    font-size: 1.15rem;
+}
+.login-card-lg .form-control {
+    min-height: 2.8rem;
+    font-size: 1.1rem;
+    padding: 0.75rem 1rem;
+}
+.login-card-lg button.btn {
+    font-size: 1.1rem;
+    padding: 0.75rem 0;
+    margin-top: 0.5rem;
+}
+@media (max-width: 600px) {
+    .login-card-lg {
+        padding: 1.2rem 0.5rem;
+        font-size: 1rem;
+    }
+    .login-card-lg .form-control {
+        min-height: 2.2rem;
+        font-size: 1rem;
+        padding: 0.5rem 0.7rem;
+    }
+}
+/* --- Responsive Design Additions --- */
+html {
+    box-sizing: border-box;
+    font-size: 16px;
+}
+*, *:before, *:after {
+    box-sizing: inherit;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    min-height: 100vh;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+
+.container, .content, .main, .dashboard, .form, .card {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1rem;
+}
+
+header, nav, footer {
+    width: 100%;
+    padding: 1rem 0.5rem;
+}
+
+/* Flexbox helpers */
+.flex {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+.flex-center {
+    justify-content: center;
+    align-items: center;
+}
+
+/* Responsive Typography */
+h1, h2, h3, h4, h5, h6 {
+    word-break: break-word;
+}
+
+/* Responsive Tables */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    overflow-x: auto;
+    display: block;
+}
+th, td {
+    padding: 0.5rem;
+    text-align: left;
+}
+
+/* Media Queries */
+@media (max-width: 900px) {
+    .container, .content, .main, .dashboard, .form, .card {
+        max-width: 95vw;
+        padding: 0.5rem;
+    }
+    header, nav, footer {
+        padding: 0.5rem 0.25rem;
+    }
+}
+
+@media (max-width: 600px) {
+    html {
+        font-size: 14px;
+    }
+    .flex {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    .container, .content, .main, .dashboard, .form, .card {
+        padding: 0.25rem;
+    }
+    table, thead, tbody, th, td, tr {
+        display: block;
+        width: 100%;
+    }
+    th, td {
+        padding: 0.25rem 0.1rem;
+    }
+}
 body {
     background-color: #f5f7fa;
 }
@@ -21,4 +222,29 @@ body {
 .menu-box:hover {
     background-color: #e8f0fe;
     transform: scale(1.03);
+}
+
+/* Responsive tweaks */
+img, .logo-nav {
+    max-width: 100%;
+    height: auto;
+}
+
+.menu-box {
+    box-sizing: border-box;
+}
+
+@media (max-width: 992px) {
+    .menu-box {
+        padding: 24px;
+    }
+}
+
+@media (max-width: 576px) {
+    .menu-box {
+        padding: 14px;
+    }
+    .navbar .navbar-brand {
+        font-size: 1rem;
+    }
 }
