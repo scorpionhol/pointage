@@ -1,10 +1,43 @@
 
 <%- include('partials/header', { title: pageTitle }) %>
 
+
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2 class="mb-0">Historique des pointages</h2>
     <a href="/dashboard" class="btn btn-outline-secondary btn-sm">Retour au tableau de bord</a>
 </div>
+
+<!-- Départements principaux -->
+<div class="mb-4">
+    <div class="row g-2">
+        <div class="col-auto">
+            <button class="btn btn-outline-primary" type="button" onclick="filterDepartement('logistique')">Logistique</button>
+        </div>
+        <div class="col-auto">
+            <button class="btn btn-outline-primary" type="button" onclick="filterDepartement('approvisionnement')">Approvisionnement</button>
+        </div>
+        <div class="col-auto">
+            <button class="btn btn-outline-primary" type="button" onclick="filterDepartement('ressources humaines')">Ressources humaines</button>
+        </div>
+        <div class="col-auto">
+            <button class="btn btn-outline-primary" type="button" onclick="filterDepartement('administration')">Administration</button>
+        </div>
+        <div class="col-auto">
+            <button class="btn btn-outline-primary" type="button" onclick="filterDepartement('finance')">Finance</button>
+        </div>
+    </div>
+    <div class="mt-2">
+        <small class="text-muted">Logistique : informatique, mécaniciens, maintenance, dispatch | Finance : caisse, comptabilité</small>
+    </div>
+</div>
+
+<script>
+// Fonction JS de base pour la suite (à compléter pour filtrer dynamiquement)
+function filterDepartement(dept) {
+    // À compléter : filtrer les agents selon le département
+    alert('Affichage des agents du département : ' + dept);
+}
+</script>
 
 <form method="GET" action="/historique" class="mb-3">
     <div class="input-group">

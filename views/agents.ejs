@@ -34,50 +34,206 @@
     <div class="card-body">
         <h5 class="card-title mb-3">Ajouter un agent</h5>
         <form method="POST" class="row g-2 align-items-end">
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <label for="nom" class="form-label">Nom</label>
                 <input name="nom" id="nom" class="form-control" placeholder="Nom" required>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-2">
                 <label for="poste" class="form-label">Poste</label>
                 <input name="poste" id="poste" class="form-control" placeholder="Poste" required>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-2">
                 <label for="matricule" class="form-label">Matricule (badge)</label>
                 <input name="matricule" id="matricule" class="form-control" placeholder="Code badge">
             </div>
             <div class="col-md-2">
+                <label for="departement" class="form-label">Département</label>
+                <select name="departement" id="departement" class="form-select" required onchange="updateSousDepartement()">
+                    <option value="">Choisir...</option>
+                    <option value="Logistique">Logistique</option>
+                    <option value="Approvisionnement">Approvisionnement</option>
+                    <option value="Ressources humaines">Ressources humaines</option>
+                    <option value="Administration">Administration</option>
+                    <option value="Finance">Finance</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label for="sous_departement" class="form-label">Sous-département</label>
+                <select name="sous_departement" id="sous_departement" class="form-select">
+                    <option value="">Aucun</option>
+                </select>
+            </div>
+            <div class="col-md-1">
                 <button class="btn btn-primary w-100">Ajouter</button>
             </div>
         </form>
+
+        <script>
+        // Sous-départements par département
+        const sousDeps = {
+            'Logistique': ['informatique', 'mécaniciens', 'maintenance', 'dispatch'],
+            'Finance': ['caisse', 'comptabilité']
+        };
+        function updateSousDepartement() {
+            const dep = document.getElementById('departement').value;
+            const sous = document.getElementById('sous_departement');
+            sous.innerHTML = '<option value="">Aucun</option>';
+            if (sousDeps[dep]) {
+                sousDeps[dep].forEach(sd => {
+                    const opt = document.createElement('option');
+                    opt.value = sd;
+                    opt.textContent = sd.charAt(0).toUpperCase() + sd.slice(1);
+                    sous.appendChild(opt);
+                });
+                sous.disabled = false;
+            } else {
+                sous.disabled = true;
+            }
+        }
+        window.onload = function() {
+            updateSousDepartement();
+        };
+        </script>
     </div>
 </div>
 
 <div class="card shadow-sm">
     <div class="card-body">
-        <h5 class="card-title mb-3">Liste des agents</h5>
+
+        <h5 class="card-title mb-3">Liste des agents par département</h5>
+        <% 
+        // Définition des départements et sous-départements
+        const departements = [
+            { nom: 'Logistique', sous: ['informatique', 'mécaniciens', 'maintenance', 'dispatch'] },
+            { nom: 'Approvisionnement' },
+            { nom: 'Ressources humaines' },
+            { nom: 'Administration' },
+            { nom: 'Finance', sous: ['caisse', 'comptabilité'] }
+        ];
+
+        function filterAgents(dept, sous) {
+            return agents.filter(a => {
+                if (sous) {
+                    return (a.departement && a.departement.toLowerCase() === dept.toLowerCase()) && (a.sous_departement && a.sous_departement.toLowerCase() === sous.toLowerCase());
+                } else {
+                    return a.departement && a.departement.toLowerCase() === dept.toLowerCase();
+                }
+            });
+        }
+        %>
+
         <% if (agents && agents.length > 0) { %>
             <div class="table-responsive">
-                <table class="table table-striped align-middle">
+                <table class="table table-bordered align-middle">
                     <thead class="table-dark">
                         <tr>
-                            <th>Nom</th>
-                            <th>Poste</th>
-                            <th>Matricule</th>
-                            <th class="text-end">Actions</th>
+                            <th style="width:40px;"></th>
+                            <th>Département</th>
+                            <th>Sous-départements</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <% agents.forEach(a => { %>
+                        <% departements.forEach((dep, i) => { %>
                             <tr>
-                                <td><%= a.nom %></td>
-                                <td><%= a.poste %></td>
-                                <td><%= a.matricule || '-' %></td>
-                                <td class="text-end">
-                                    <form method="POST" action="/agents/<%= a.id %>/delete" class="d-inline"
-                                          onsubmit="return confirm('Supprimer définitivement cet agent ?');">
-                                        <button class="btn btn-sm btn-outline-danger">Supprimer</button>
-                                    </form>
+                                <td class="text-center">
+                                    <button class="btn btn-sm btn-link" type="button" data-bs-toggle="collapse" data-bs-target="#deptCollapse<%= i %>" aria-expanded="false" aria-controls="deptCollapse<%= i %>">
+                                        <span class="bi bi-chevron-down"></span>
+                                    </button>
+                                </td>
+                                <td class="fw-bold text-primary"><%= dep.nom %></td>
+                                <td>
+                                    <% if (dep.sous) { %>
+                                        <%= dep.sous.map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(', ') %>
+                                    <% } else { %>
+                                        <span class="text-muted">-</span>
+                                    <% } %>
+                                </td>
+                            </tr>
+                            <tr class="collapse" id="deptCollapse<%= i %>">
+                                <td colspan="3">
+                                    <% if (dep.sous) { %>
+                                        <div class="accordion" id="accordionSousDept<%= i %>">
+                                            <% dep.sous.forEach((sous, j) => { 
+                                                const agentsSous = filterAgents(dep.nom, sous);
+                                                const sousId = `sousCollapse${i}_${j}`;
+                                            %>
+                                            <div class="accordion-item mb-2">
+                                                <h2 class="accordion-header" id="heading<%= sousId %>">
+                                                    <button class="accordion-button collapsed py-2 px-3" type="button" data-bs-toggle="collapse" data-bs-target="#<%= sousId %>" aria-expanded="false" aria-controls="<%= sousId %>">
+                                                        <span class="fw-semibold text-secondary"><%= sous.charAt(0).toUpperCase() + sous.slice(1) %></span>
+                                                    </button>
+                                                </h2>
+                                                <div id="<%= sousId %>" class="accordion-collapse collapse" aria-labelledby="heading<%= sousId %>" data-bs-parent="#accordionSousDept<%= i %>">
+                                                    <div class="accordion-body p-2">
+                                                        <% if (agentsSous.length > 0) { %>
+                                                            <div class="table-responsive">
+                                                                <table class="table table-striped align-middle table-sm mb-0">
+                                                                    <thead class="table-light">
+                                                                        <tr>
+                                                                            <th>Nom</th>
+                                                                            <th>Poste</th>
+                                                                            <th>Matricule</th>
+                                                                            <th class="text-end">Actions</th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                        <% agentsSous.forEach(a => { %>
+                                                                            <tr>
+                                                                                <td><%= a.nom %></td>
+                                                                                <td><%= a.poste %></td>
+                                                                                <td><%= a.matricule || '-' %></td>
+                                                                                <td class="text-end">
+                                                                                    <form method="POST" action="/agents/<%= a.id %>/delete" class="d-inline" onsubmit="return confirm('Supprimer définitivement cet agent ?');">
+                                                                                        <button class="btn btn-sm btn-outline-danger">Supprimer</button>
+                                                                                    </form>
+                                                                                </td>
+                                                                            </tr>
+                                                                        <% }) %>
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                        <% } else { %>
+                                                            <div class="text-muted ms-2">Aucun agent dans ce sous-département.</div>
+                                                        <% } %>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <% }) %>
+                                        </div>
+                                    <% } else { 
+                                        const agentsDept = filterAgents(dep.nom);
+                                    %>
+                                        <% if (agentsDept.length > 0) { %>
+                                            <div class="table-responsive">
+                                                <table class="table table-striped align-middle table-sm mb-0">
+                                                    <thead class="table-light">
+                                                        <tr>
+                                                            <th>Nom</th>
+                                                            <th>Poste</th>
+                                                            <th>Matricule</th>
+                                                            <th class="text-end">Actions</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <% agentsDept.forEach(a => { %>
+                                                            <tr>
+                                                                <td><%= a.nom %></td>
+                                                                <td><%= a.poste %></td>
+                                                                <td><%= a.matricule || '-' %></td>
+                                                                <td class="text-end">
+                                                                    <form method="POST" action="/agents/<%= a.id %>/delete" class="d-inline" onsubmit="return confirm('Supprimer définitivement cet agent ?');">
+                                                                        <button class="btn btn-sm btn-outline-danger">Supprimer</button>
+                                                                    </form>
+                                                                </td>
+                                                            </tr>
+                                                        <% }) %>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        <% } else { %>
+                                            <div class="text-muted ms-2">Aucun agent dans ce département.</div>
+                                        <% } %>
+                                    <% } %>
                                 </td>
                             </tr>
                         <% }) %>
@@ -87,6 +243,9 @@
         <% } else { %>
             <div class="alert alert-info text-center mb-0">Aucun agent enregistré.</div>
         <% } %>
+
+<!-- Bootstrap Icons pour la flèche -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     </div>
 </div>
 

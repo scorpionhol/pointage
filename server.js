@@ -51,21 +51,31 @@ function initDB() {
         `).get();
         
         if (!agentsTable) {
-            // Créer la table agents
+            // Créer la table agents avec departement et sous_departement
             db.exec(`
                 CREATE TABLE agents (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     name TEXT NOT NULL,
                     note TEXT NOT NULL,
-                    matricule TEXT UNIQUE
+                    matricule TEXT UNIQUE,
+                    departement TEXT,
+                    sous_departement TEXT
                 )
             `);
-    } else {
-            // Vérifier si la colonne matricule existe
+        } else {
+            // Vérifier et ajouter les colonnes manquantes
             const tableInfo = db.pragma('table_info(agents)');
             const hasMatricule = tableInfo.some(col => col.name === 'matricule');
-        if (!hasMatricule) {
+            const hasDepartement = tableInfo.some(col => col.name === 'departement');
+            const hasSousDepartement = tableInfo.some(col => col.name === 'sous_departement');
+            if (!hasMatricule) {
                 db.exec('ALTER TABLE agents ADD COLUMN matricule TEXT UNIQUE');
+            }
+            if (!hasDepartement) {
+                db.exec('ALTER TABLE agents ADD COLUMN departement TEXT');
+            }
+            if (!hasSousDepartement) {
+                db.exec('ALTER TABLE agents ADD COLUMN sous_departement TEXT');
             }
         }
 
@@ -180,7 +190,7 @@ app.get("/dashboard", isAuth, (req, res) => {
 app.get("/agents", isAuth, (req, res) => {
     try {
         const agents = db.prepare(`
-            SELECT id, name as nom, note as poste, matricule 
+            SELECT id, name as nom, note as poste, matricule, departement, sous_departement
             FROM agents
         `).all();
         res.render("agents", { pageTitle: "Agents", agents });
@@ -193,16 +203,22 @@ app.get("/agents", isAuth, (req, res) => {
 // Ajout d'un agent
 
 app.post("/agents", isAuth, (req, res) => {
-    const { nom, poste, matricule } = req.body;
-    if (!nom || !poste) {
-        return res.status(400).send("Nom et poste requis.");
+    const { nom, poste, matricule, departement, sous_departement } = req.body;
+    if (!nom || !poste || !departement) {
+        return res.status(400).send("Nom, poste et département requis.");
     }
     try {
         const insert = db.prepare(`
-            INSERT INTO agents (name, note, matricule) 
-            VALUES (?, ?, ?)
+            INSERT INTO agents (name, note, matricule, departement, sous_departement)
+            VALUES (?, ?, ?, ?, ?)
         `);
-        insert.run(nom, poste, matricule || null);
+        insert.run(
+            nom,
+            poste,
+            matricule || null,
+            departement || null,
+            sous_departement || null
+        );
         res.redirect("/agents");
     } catch (err) {
         res.status(500).send("Erreur serveur : " + err.message);
